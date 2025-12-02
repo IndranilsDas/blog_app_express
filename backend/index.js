@@ -1,8 +1,14 @@
 import express from 'express'
 import cors from 'cors'
+import fs from 'fs'
+import path from 'path'
 import sequelize,{dbConnection_init} from './db/connection.js'
 import {Users,Blogs} from './models/associations.js'
 import multer from 'multer'
+import jwt from 'jsonwebtoken'
+import { configDotenv } from 'dotenv'
+
+configDotenv()
 
 const app = express()
 const PORT = '8000'
@@ -23,7 +29,9 @@ const storage = multer.diskStorage({
         return cb(null, Date.now()+`-`+file.originalname)
     },
     destination:function (req,file,cb){
-        return cb(null,'./media/profile_pictures')
+        let dir = path.join('media',`${req.body.username}`,'profile_pictures')
+        fs.mkdirSync(dir,{ recursive: true })
+        return cb(null,`./media/${req.body.username}/profile_pictures`)
     }
 })
 
@@ -44,8 +52,10 @@ app.post('/register',upload.single("profile_picture"),async(req,res)=>{
         res.status(409).json({message:"user exists."})
     }
     else{ 
-        await Users.create({username,email,password,profile_picture}); 
-        res.status(201).json({success:true})
+        const user = await Users.create({username,email,password,profile_picture}); 
+        console.log(user.dataValues,"USER")
+        const token = jwt.sign({id:user.id,username:user.username},process.env.JWTKEY,)
+        res.status(201).json({success:true,user:user.dataValues,token:token})
 }
     
 })
