@@ -24,6 +24,7 @@ const createBlog = () =>{
     }
 
     return (<div className={`${raleway.className} h=screen w-screen flex flex-col justify-center items-center`}>
+        
     <form className="flex flex-col gap-2 h-4/5 w-4/5 px-6 py-6 ring" action="">
         <h1 className="text-[1.7rem]">create</h1>
         <label htmlFor="title">title</label>
